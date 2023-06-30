@@ -1,0 +1,4 @@
+Maximize
+	z = -x1 + x2 + 3x3
+Subject To
+	c0:x1 + x3 + 5z<= 4

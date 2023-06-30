@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simplex Didático</title>
+    <meta charset='UTF-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1.0'>    
+    <script src='https://cdn.plot.ly/plotly-2.24.1.min.js'></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.2/math.js" integrity="sha512-ap888g/h47w/Rp6mra1vA5NJtdPZJRxOuF/x7jkrL2NdRB8XrKwXIt/PMvre+oMPUdYt+6NNDjwbdwl/PkYXrw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <!-- <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script> -->
+    <link href="style.css" rel="stylesheet">
+</head>
+
+<body>
+    <div style='width: 100%;'>
+        <label for='file' class='button'>Selecionar modelo</label>
+        <input type='file' id='file' style='display: none;'/>
+    </div>
+
+    <div id = 'main'>
+        <div id='file'>
+            <textarea rows='10' cols='auto' id='preview'></textarea>
+            <button id='download' class='button'>Baixar modelo</button>
+            <button id='execute' class='button'>Executar modelo</button>
+        </div>
+        <div id='dictionary'></div>
+    </div>
+
+    <div style='clear: left; width: 100%;'></div>
+        
+    </div>
+    <div id='graph'>
+    </div>
+    <script type='module' src='main.js'></script>    
+    <script type='module' src='lp.js'></script>
+    <script type='module' src='model.js'></script>
+</body>
+</html>
