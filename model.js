@@ -180,30 +180,19 @@ export class Model{
             let symbol = document.createElement('td');
             if(this.base[i] != null){
                 const variable = this.variables[this.base[i] - 1];
-                if(i != 0){
-                    const button = document.createElement('button');
-                    button.id = 'E' + variable;
-                    button.classList.add('variableOut');
-                    button.value = [this.base[i], false];
-                    button.appendChild(document.createTextNode(variable[0]));
-                    if(variable.length > 1){
-                        const sub = document.createElement('sub');
-                        sub.appendChild(document.createTextNode(variable.substring(1)));
-                        sub.style.fontSize = '50%';
-                        button.appendChild(sub);
-                    }
-                    element.appendChild(button);
+                const button = document.createElement('button');
+                button.id = 'E' + variable;
+                button.classList.add('variableOut');
+                button.value = [this.base[i], false];
+                button.appendChild(document.createTextNode(variable[0]));
+                if(variable.length > 1){
+                    const sub = document.createElement('sub');
+                    sub.appendChild(document.createTextNode(variable.substring(1)));
+                    sub.style.fontSize = '50%';
+                    button.appendChild(sub);
                 }
-                else{
-                    element.appendChild(document.createTextNode(variable[0]));
-                    if(variable.length > 1){
-                        const sub = document.createElement('sub');
-                        sub.appendChild(document.createTextNode(variable.substring(1)));
-                        sub.style.fontSize = '50%';
-                        element.appendChild(sub);
-                    }
-                }                
-                symbol.appendChild(document.createTextNode('='))
+                element.appendChild(button);
+                symbol.appendChild(document.createTextNode('='));
             }
             row.appendChild(element);
             row.appendChild(symbol);
@@ -241,6 +230,7 @@ export class Model{
                             if(i == 0){
                                 const button = document.createElement('button');
                                 button.id = variable;
+                                button.classList.add('button');
                                 button.classList.add('variableIn');
                                 button.value = j;
                                 button.appendChild(document.createTextNode(variable[0]));
@@ -286,6 +276,8 @@ export class Model{
             if(this.base[i] != null){
                 const button = document.getElementById('E'+this.variables[this.base[i]-1]);
                 if(this.body[i][variableIndex].n !=0){
+                    button.classList.remove('variableOut');
+                    button.classList.add('button');
                     const row = button.parentElement.parentElement;
                     const element = document.createElement('td');                
                     element.appendChild(document.createTextNode(variable[0]));
@@ -321,8 +313,11 @@ export class Model{
                     row.appendChild(element);                    
                     button.value = [button.value.substring(0, button.value.indexOf(',')), true];
                 }
-                else
+                else{                    
+                    button.classList.add('variableOut');
+                    button.classList.remove('button');
                     button.value = [button.value.substring(0, button.value.indexOf(',')), false];
+                }
             }
         }
     }
@@ -342,7 +337,7 @@ export class Model{
     generateGraph(matrix){
         this.variablesGraph = new Array();
         for(let i = 1; i < this.countTerms; i++)
-            if(!this.baseSet.has(i))
+            if(!this.baseSet.has(i) || (this.base.indexOf(i) != 0 && this.variables[i-1].charAt(0) != 'S'))
                 this.variablesGraph.push(i);
         this.dimensions = this.variablesGraph.length;
         if(this.dimensions == 2){
@@ -363,9 +358,18 @@ export class Model{
                     x = xValues[1];
                     yValues.push(eval(expression));
                     switch(this.getType(matrix, i)){
-                        case 0:
-                            this.datas.push({x: xValues, y: yValues, mode: 'lines', name: this.getExpression(matrix, i)});
-                            break;
+                        case 0:{
+                            /* this.datas.push({x: [xValues[1], xValues[0]], y: yValues, mode: 'lines', name: this.getExpression(matrix, i)});
+                            break; */
+                            let graph = document.getElementById('graph');
+                            graph.remove();
+                            const graphContainer = document.getElementById('graph-container');
+                            graph = document.createElement('div');
+                            graph.id = 'graph';
+                            graphContainer.appendChild(graph);
+                            this.dimensions = 0;
+                            return;
+                        }
                         case 1:
                             if(this.body[i][yPosition].s == -1)
                                 this.datas.push({x: xValues.concat([infinity, -infinity]), y: yValues.concat([-infinity, -infinity]), mode: 'lines', name: this.getExpression(matrix, i), fill: 'toself'});
@@ -384,9 +388,18 @@ export class Model{
                     const xValues = [value, value];
                     const yValues = [-infinity, infinity];
                     switch(this.getType(matrix, i)){
-                        case 0:
-                            this.datas.push({x: xValues, y: yValues, mode: 'lines', name: this.getExpression(matrix, i)});
-                            break;
+                        case 0:{
+                            /* this.datas.push({x: xValues, y: yValues, mode: 'lines', name: this.getExpression(matrix, i)});
+                            break; */
+                            let graph = document.getElementById('graph');
+                            graph.remove();
+                            const graphContainer = document.getElementById('graph-container');
+                            graph = document.createElement('div');
+                            graph.id = 'graph';
+                            graphContainer.appendChild(graph);
+                            this.dimensions = 0;
+                            return;
+                        }
                         case 1:
                             if(this.body[i][xPosition].s == -1)
                                 this.datas.push({x: xValues.concat([-infinity, -infinity]), y: yValues.concat([infinity, -infinity]), mode: 'lines', name: this.getExpression(matrix, i), fill: 'toself'});
@@ -404,7 +417,7 @@ export class Model{
 
 
             this.datas.push({x: [-infinity, infinity, infinity, -infinity], y:[0, 0, infinity, infinity], name: this.variables[xPosition - 1] + '=0', line: {color: 'black'}, mode: 'lines'});
-            this.datas.push({x: [0, 0, infinity, infinity], y:[-infinity, infinity, infinity, -infinity], name: this.variables[yPosition - 1] + '=0', line: {color: 'black'}, mode: 'lines'});
+            this.datas.push({x: [0, 0, infinity, infinity], y:[-infinity, infinity, infinity, -infinity], name: this.variables[yPosition - 1] + '=0', line: {color: 'gray'}, mode: 'lines'});
 
 
             this.layout = {
@@ -428,8 +441,10 @@ export class Model{
             if(this.baseSet.has(this.variablesGraph[1]))
                 yValue = this.body[this.base.indexOf(this.variablesGraph[1])][0];
             for(let i = 1; i < this.countTerms; i++){
-                if(this.baseSet.has(i))
-                    text += '(' + this.variables[i - 1] + ': ' + this.body[this.base.indexOf(i)][0].toString() + '), \n';
+                if(this.baseSet.has(i)){
+                    const index = this.base.indexOf(i)
+                    text += '(' + this.variables[i - 1] + ': ' + (this.body[index][0].s*this.body[index][0].n/this.body[index][0].d).toString() + '), \n';
+                }
                 else
                     text += '(' + this.variables[i - 1] + ': 0), \n';
             }
@@ -482,8 +497,10 @@ export class Model{
             if(this.baseSet.has(this.variablesGraph[1]))
                 yValue = this.body[this.base.indexOf(this.variablesGraph[1])][0];
             for(let i = 1; i < this.countTerms; i++){
-                if(this.baseSet.has(i))
-                    text += '(' + this.variables[i - 1] + ': ' + this.body[this.base.indexOf(i)][0].toString() + '), \n';
+                if(this.baseSet.has(i)){
+                    const index = this.base.indexOf(i)
+                    text += '(' + this.variables[i - 1] + ': ' + (this.body[index][0].s*this.body[index][0].n/this.body[index][0].d).toString() + '), \n';
+                }
                 else
                     text += '(' + this.variables[i - 1] + ': 0), \n';
             }
