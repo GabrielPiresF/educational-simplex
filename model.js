@@ -1,3 +1,5 @@
+const infinity = 10000;
+
 export class Model{
     constructor(matrix){
         this.type = matrix[0];
@@ -6,6 +8,13 @@ export class Model{
         this.countExpressions = matrix[2].length + (matrix[3] != null ? matrix[3].length : 0) + 1;
         this.base = Array(this.countExpressions).fill(null);
         this.baseSet = new Set();
+
+
+        this.datas = null;
+        this.layout = null;
+        this.config = null;
+        this.dimensions = 0;
+        this.variablesGraph = null;
 
 
         if(matrix[1][0] != null)
@@ -116,6 +125,7 @@ export class Model{
                 this.base[i] = null;
         }
         this.createTable();
+        this.generateGraph(matrix);
     }
 
 
@@ -326,5 +336,163 @@ export class Model{
         this.baseSet.delete(variableOut);
         this.insert(index, variableIn);
         this.createTable();
+    }
+
+
+    generateGraph(matrix){
+        this.variablesGraph = new Array();
+        for(let i = 1; i < this.countTerms; i++)
+            if(!this.baseSet.has(i))
+                this.variablesGraph.push(i);
+        this.dimensions = this.variablesGraph.length;
+        if(this.dimensions == 2){
+            this.datas = new Array();
+            this.variablesGraph = this.variablesGraph.sort();
+            const xPosition = this.variablesGraph[0];            
+            const yPosition = this.variablesGraph[1];
+            
+
+            for(let i = 1; i < this.countExpressions; i++){
+                if(this.body[i][yPosition].n != 0){
+                    const normalize = '(' + ((this.body[i][yPosition].s == 1 ? -1 : 1)*this.body[i][yPosition].d/this.body[i][yPosition].n) + ')';
+                    const expression = normalize + '*(' + this.body[i][xPosition] + ')*' + 'x' + '+' + normalize + '*(' + this.body[i][0] + ')';
+                    const xValues = [-infinity, infinity];
+                    const yValues = new Array();
+                    let x = xValues[0];
+                    yValues.push(eval(expression));
+                    x = xValues[1];
+                    yValues.push(eval(expression));
+                    switch(this.getType(matrix, i)){
+                        case 0:
+                            this.datas.push({x: xValues, y: yValues, mode: 'lines', name: this.getExpression(matrix, i)});
+                            break;
+                        case 1:
+                            if(this.body[i][yPosition].s == -1)
+                                this.datas.push({x: xValues.concat([infinity, -infinity]), y: yValues.concat([-infinity, -infinity]), mode: 'lines', name: this.getExpression(matrix, i), fill: 'toself'});
+                            else
+                                this.datas.push({x: xValues.concat([infinity, -infinity]), y: yValues.concat([infinity, infinity]), mode: 'lines', name: this.getExpression(matrix, i), fill: 'toself'});
+                            break;
+                        case 2:
+                            if(this.body[i][yPosition].s == 1)
+                                this.datas.push({x: xValues.concat([infinity, -infinity]), y: yValues.concat([infinity, infinity]), mode: 'lines', name: this.getExpression(matrix, i), fill: 'toself'});
+                            else
+                                this.datas.push({x: xValues.concat([infinity, -infinity]), y: yValues.concat([-infinity, -infinity]), mode: 'lines', name: this.getExpression(matrix, i), fill: 'toself'});
+                    }
+                }
+                else if(this.body[i][xPosition].n != 0){
+                    const value = eval('(' + ((this.body[i][xPosition].s == 1 ? -1 : 1)*this.body[i][xPosition].d/this.body[i][xPosition].n) + ')*(' + this.body[i][0] + ')');
+                    const xValues = [value, value];
+                    const yValues = [-infinity, infinity];
+                    switch(this.getType(matrix, i)){
+                        case 0:
+                            this.datas.push({x: xValues, y: yValues, mode: 'lines', name: this.getExpression(matrix, i)});
+                            break;
+                        case 1:
+                            if(this.body[i][xPosition].s == -1)
+                                this.datas.push({x: xValues.concat([-infinity, -infinity]), y: yValues.concat([infinity, -infinity]), mode: 'lines', name: this.getExpression(matrix, i), fill: 'toself'});
+                            else
+                                this.datas.push({x: xValues.concat([infinity, infinity]), y: yValues.concat([infinity, -infinity]), mode: 'lines', name: this.getExpression(matrix, i), fill: 'toself'});
+                            break;
+                        case 2:
+                            if(this.body[i][xPosition].s == 1)
+                                this.datas.push({x: xValues.concat([infinity, infinity]), y: yValues.concat([infinity, -infinity]), mode: 'lines', name: this.getExpression(matrix, i), fill: 'toself'});
+                            else
+                                this.datas.push({x: xValues.concat([-infinity, -infinity]), y: yValues.concat([infinity, -infinity]), mode: 'lines', name: this.getExpression(matrix, i), fill: 'toself'});
+                    }
+                }
+            }
+
+
+            this.datas.push({x: [-infinity, infinity, infinity, -infinity], y:[0, 0, infinity, infinity], name: this.variables[xPosition - 1] + '=0', line: {color: 'black'}, mode: 'lines'});
+            this.datas.push({x: [0, 0, infinity, infinity], y:[-infinity, infinity, infinity, -infinity], name: this.variables[yPosition - 1] + '=0', line: {color: 'black'}, mode: 'lines'});
+
+
+            this.layout = {
+                showlegend: true,
+                xaxis: {range: [-20, 20]},
+                yaxis: {range: [-5, 10]},
+                dragmode: false,
+                height: 0.3*window.innerWidth,
+                width: 0.8*window.innerWidth
+            };
+
+
+            this.config = {scrollZoom: true, editable: false, modeBarButtonsToRemove: ['zoom2d']};
+
+            
+            let xValue = math.fraction('0');
+            let yValue = math.fraction('0');
+            let text = '';
+            if(this.baseSet.has(this.variablesGraph[0]))
+                xValue = this.body[this.base.indexOf(this.variablesGraph[0])][0];
+            if(this.baseSet.has(this.variablesGraph[1]))
+                yValue = this.body[this.base.indexOf(this.variablesGraph[1])][0];
+            for(let i = 1; i < this.countTerms; i++){
+                if(this.baseSet.has(i))
+                    text += '(' + this.variables[i - 1] + ': ' + this.body[this.base.indexOf(i)][0].toString() + '), \n';
+                else
+                    text += '(' + this.variables[i - 1] + ': 0), \n';
+            }
+            this.datas.push({
+                x: [xValue.s*xValue.n/xValue.d],
+                y: [yValue.s*yValue.n/yValue.d],
+                mode: 'markers',
+                text: [text],
+                type: 'scatter',
+                name: 'points'
+            });
+            Plotly.newPlot('graph', this.datas, this.layout, this.config);
+            const pan = document.querySelector('a[data-title="Pan"');
+            pan.click();
+        }
+        else{
+            let graph = document.getElementById('graph');
+            graph.remove();
+            const graphContainer = document.getElementById('graph-container');
+            graph = document.createElement('div');
+            graph.id = 'graph';
+            graphContainer.appendChild(graph);
+        }    
+    }
+
+    getType(matrix, index){
+        if(index < matrix[2].length + 1)
+            return matrix[2][index - 1][2];
+        return matrix[3][index - matrix[2].length - 1][1];
+    }
+
+    getExpression(matrix, index){
+        if(index < matrix[2].length + 1)
+            return matrix[2][index - 1][0];
+        switch(matrix[3][index - matrix[2].length - 1][1]){
+            case 1:
+                return matrix[3][index - matrix[2].length - 1][0] + '\u2264' + matrix[3][index - matrix[2].length - 1][2];
+            case 2:
+                return matrix[3][index - matrix[2].length - 1][0] + '\u2265' + matrix[3][index - matrix[2].length - 1][2];
+        }
+    }
+
+    updateDatas(){
+        if(this.dimensions == 2){            
+            let xValue = math.fraction('0');
+            let yValue = math.fraction('0');
+            let text = '';
+            if(this.baseSet.has(this.variablesGraph[0]))
+                xValue = this.body[this.base.indexOf(this.variablesGraph[0])][0];
+            if(this.baseSet.has(this.variablesGraph[1]))
+                yValue = this.body[this.base.indexOf(this.variablesGraph[1])][0];
+            for(let i = 1; i < this.countTerms; i++){
+                if(this.baseSet.has(i))
+                    text += '(' + this.variables[i - 1] + ': ' + this.body[this.base.indexOf(i)][0].toString() + '), \n';
+                else
+                    text += '(' + this.variables[i - 1] + ': 0), \n';
+            }
+            this.datas[this.datas.length - 1].x.push(xValue.s*xValue.n/xValue.d);
+            this.datas[this.datas.length - 1].y.push(yValue.s*yValue.n/yValue.d);
+            this.datas[this.datas.length - 1].text.push(text);
+            Plotly.newPlot('graph', this.datas, this.layout, this.config);
+            const pan = document.querySelector('a[data-title="Pan"');
+            pan.click();
+        }
     }
 }

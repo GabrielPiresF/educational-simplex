@@ -41,9 +41,16 @@ label.button{
     float: left;
 }
 
+#graph-container{
+    clear: both;
+    width: 80%;
+    padding: auto;
+    margin: auto;
+    align-content: center;
+    justify-content: center;
+}
 #graph{
-    width: 90%;
-    padding: 0 5%;
+    width: 100%;
 }
 
 #main{

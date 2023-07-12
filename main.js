@@ -10,6 +10,7 @@ const fileExecute = document.getElementById('execute');
 let variableIn;
 let variableOut;
 let model;
+filePreview.value = 'Maximize\n\tz = 30x1 + 20x2\nSubject To\n\tc1:2x1 + x2 <= 8\n\tc2:x1 + 3x2 <= 8';
 
 fileInput.addEventListener('change', function(){
     const file = this.files[0];
@@ -54,7 +55,6 @@ fileDownload.addEventListener('click', function(){
 
 fileExecute.addEventListener('click', function(){
     const lpResult = parse(filePreview.value);
-    //console.log(lpResult);
     model = new Model(lpResult);
     updateBottons();
 });
@@ -88,28 +88,10 @@ const updateBottons = function(){
                 if(button.value.substring(index+1) == 'true'){
                     variableOut = button.value.substring(0, index);
                     model.pivoting(parseInt(variableIn), parseInt(variableOut));
+                    model.updateDatas();
                     updateBottons();
                 }
             });
         }
     }
 }
-
-/* variableIn.addEventListener('click', function(){
-    this.console.log(variableIn.value);
-}); */
-
-var trace1 = {
-    x:['2020-10-04', '2021-11-04', '2023-12-04'],
-    y: [90, 40, 60],
-    type: 'scatter'
-};
-
-var data = [trace1];
-
-var layout = {
-    title: 'Scroll and Zoom',
-    showlegend: false
-};
-
-Plotly.newPlot('graph', data, layout, {scrollZoom: true});

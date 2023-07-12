@@ -1,0 +1,6 @@
+Maximize
+	z = -x1 + 3x3
+Subject To
+	c0:x1 + x3 <= 4
+	c1: x3 <= 7
+	c2:x1>= 3
