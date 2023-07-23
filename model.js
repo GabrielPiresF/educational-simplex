@@ -1,3 +1,8 @@
+import {insertUnfeasibleProblemAlert,
+    insertUnlimitedProblemAlert,
+    insertGreatFoundAlert,
+    insertViablePointFoundAlert} from './alert.js'
+
 const infinity = 10000;
 
 export class Model{
@@ -202,18 +207,8 @@ export class Model{
                         if(withoutfirst)
                             withoutfirst = false;
                         row.appendChild(symbol);
-                        if(this.body[i][j].d != 1){
-                            const math = document.createElementNS('http://www.w3.org/1998/Math/MathML', 'math');
-                            const mfrac = document.createElementNS('http://www.w3.org/1998/Math/MathML', 'mfrac');
-                            const min = document.createElementNS('http://www.w3.org/1998/Math/MathML', 'mi');
-                            min.appendChild(document.createTextNode(this.body[i][j].n.toString()));
-                            const mid = document.createElementNS('http://www.w3.org/1998/Math/MathML', 'mi');                        
-                            mid.appendChild(document.createTextNode(this.body[i][j].d.toString()));
-                            mfrac.appendChild(min);
-                            mfrac.appendChild(mid);
-                            math.appendChild(mfrac);
-                            element.appendChild(math);
-                        }
+                        if(this.body[i][j].d != 1)
+                            this.addFractionToDictionary(element, this.body[i][j]);
                         else if(j == 0 || this.body[i][j].n != 1)
                             element.appendChild(document.createTextNode(this.body[i][j].n.toString()));
                         if(j > 0){
@@ -266,7 +261,7 @@ export class Model{
     }
 
 
-    showState(){
+    showCurrentState(){
         const dictionary = document.getElementById('dictionary');
         const table = document.createElement('table');
         table.style.width = '100%';
@@ -309,18 +304,8 @@ export class Model{
                         if(withoutfirst)
                             withoutfirst = false;
                         row.appendChild(symbol);
-                        if(this.body[i][j].d != 1){
-                            const math = document.createElementNS('http://www.w3.org/1998/Math/MathML', 'math');
-                            const mfrac = document.createElementNS('http://www.w3.org/1998/Math/MathML', 'mfrac');
-                            const min = document.createElementNS('http://www.w3.org/1998/Math/MathML', 'mi');
-                            min.appendChild(document.createTextNode(this.body[i][j].n.toString()));
-                            const mid = document.createElementNS('http://www.w3.org/1998/Math/MathML', 'mi');                        
-                            mid.appendChild(document.createTextNode(this.body[i][j].d.toString()));
-                            mfrac.appendChild(min);
-                            mfrac.appendChild(mid);
-                            math.appendChild(mfrac);
-                            element.appendChild(math);
-                        }
+                        if(this.body[i][j].d != 1)
+                            this.addFractionToDictionary(element, this.body[i][j]);
                         else if(j == 0 || this.body[i][j].n != 1)
                             element.appendChild(document.createTextNode(this.body[i][j].n.toString()));
                         if(j > 0){
@@ -341,31 +326,11 @@ export class Model{
                 }
             }
         }
-        //const current_table = document.getElementsByTagName('table')[0];
-        //console.log('current_table: ', current_table);
         dictionary.replaceChild(table, document.getElementsByTagName('table')[0]);
-        /*
-        const twoPhases = document.createElement('button');
-        twoPhases.appendChild(document.createTextNode('DUAS FASES'))
-        twoPhases.id = 'twoPhases';
-        twoPhases.classList.add('button');
-        twoPhases.addEventListener('click', function(){
-            twoPhases();
-        });
-        dictionary.appendChild(twoPhases);
-
-        const executeSimplex = document.createElement('button');
-        executeSimplex.appendChild(document.createTextNode('EXECUTAR SIMPLEX'))
-        executeSimplex.id = 'executeSimplex';
-        executeSimplex.classList.add('button');
-        executeSimplex.addEventListener('click', function(){
-            executeSimplex();
-        });
-        dictionary.appendChild(executeSimplex); */
     }
 
 
-    showStateLimits(variableIndex){
+    showCurrentStateLimits(variableIndex){
         const variable = this.variables[variableIndex - 1];
         this.limits = new Array();
         for(let i = 1; i < this.countExpressions; i++){
@@ -389,18 +354,8 @@ export class Model{
                             element.appendChild(document.createTextNode('-'));
                         if(limit.d == 1)
                             element.appendChild(document.createTextNode(limit.n.toString()));
-                        else{
-                            const math = document.createElementNS('http://www.w3.org/1998/Math/MathML', 'math');
-                            const mfrac = document.createElementNS('http://www.w3.org/1998/Math/MathML', 'mfrac');
-                            const min = document.createElementNS('http://www.w3.org/1998/Math/MathML', 'mi');
-                            min.appendChild(document.createTextNode(limit.n.toString()));
-                            const mid = document.createElementNS('http://www.w3.org/1998/Math/MathML', 'mi');                        
-                            mid.appendChild(document.createTextNode(limit.d.toString()));
-                            mfrac.appendChild(min);
-                            mfrac.appendChild(mid);
-                            math.appendChild(mfrac);
-                            element.appendChild(math);
-                        }
+                        else
+                            this.addFractionToDictionary(element, limit);
                         this.limits.push({type: true, index: i, value: limit.s*limit.n/limit.d});
                     }
                     else{                        
@@ -417,6 +372,20 @@ export class Model{
                 }
             }
         }
+    }
+
+
+    addFractionToDictionary(element, value){
+        const math = document.createElementNS('http://www.w3.org/1998/Math/MathML', 'math');
+        const mfrac = document.createElementNS('http://www.w3.org/1998/Math/MathML', 'mfrac');
+        const min = document.createElementNS('http://www.w3.org/1998/Math/MathML', 'mi');
+        min.appendChild(document.createTextNode(value.n.toString()));
+        const mid = document.createElementNS('http://www.w3.org/1998/Math/MathML', 'mi');                        
+        mid.appendChild(document.createTextNode(value.d.toString()));
+        mfrac.appendChild(min);
+        mfrac.appendChild(mid);
+        math.appendChild(mfrac);
+        element.appendChild(math);
     }
 
 
@@ -446,7 +415,7 @@ export class Model{
             this.oldObjective.push(this.body[0][i]);
         this.variables.push('A');
         const zero = math.fraction('0');
-        for(let i = 1; i < this.countTerms; i++)
+        for(let i = 0; i < this.countTerms; i++)
             if(!this.baseSet.has(i))
                 this.body[0][i] = zero;
         this.countTerms++;
@@ -489,7 +458,6 @@ export class Model{
 
 
     next(){
-        //console.log('this.states.length: ', this.states.length);
         switch(this.states.length){
             case 0:
                 this.finishedExecution = 0;
@@ -497,59 +465,34 @@ export class Model{
                     const variableOut = this.base[this.getSmallerExpression()];
                     this.states.push({type: 0, variableIn: this.countTerms - 1, variableOut: variableOut});
                     this.pivoting(this.states[this.states.length - 1].variableIn, this.states[this.states.length - 1].variableOut);
-                    this.showState();
-                    if(this.dimensions == 2){
-                        this.datas[this.datas.length - 2].x.pop();
-                        this.datas[this.datas.length - 2].y.pop();
-                    }
+                    this.showCurrentState();
                     this.updateDatas();
                     break;
                 }
-            /* case 1:
-                if(this.twoPhasesActive){
-                    const variableOut = this.base[this.getSmallerExpression()];
-                    this.states.push({type: 1, variableOut: variableOut});
-                    this.pivoting(this.states[this.states.length - 2].variableIn, variableOut);
-                    this.showState();
-                    this.updateDatas();
-                    break;
-                }
-                else{
-
-                }
-                break; */
             default:{
-                //console.log('default');
-                /* if(this.twoPhasesActive){
-                    //console.log('twoPhasesActive');
-                    if(this.body[0][0].n == 0){
-
-                    }
-                    else{
-                        const variableIn = this.getSmallerVariable();
-                        if(this.body[0][variableIn].n == 0){
-
-                        }
-                        else{
-                            console.log('variableIn: ', this.variables[variableIn - 1]);
-                        }
-                    }
-                }
-                else{
-
-                } */
                 if(this.states.length == 0 || this.states[this.states.length - 1].type != 1){
                     let variableIn;
                     if(this.type)
                         variableIn = this.getBiggerVariable();
                     else
                         variableIn = this.getSmallerVariable();
-                    console.log('variableIn: ', variableIn, ', variable: ', this.variables[variableIn - 1], ', value: ', this.body[0][variableIn].s*this.body[0][variableIn].n/this.body[0][variableIn].d);
-                    if(this.body[0][variableIn].n == 0 || (this.type && this.body[0][variableIn].s*this.body[0][variableIn].n/this.body[0][variableIn].d < 0) || (!this.type && this.body[0][variableIn].s*this.body[0][variableIn].n/this.body[0][variableIn].d > 0)){
-                        console.log('Chegou no ótimo');
+                    if(this.body[0][variableIn].n == 0 || (this.type && this.body[0][variableIn].s < 0) || (!this.type && this.body[0][variableIn].s > 0)){ // se a variável selecionada para entrar não melhora a função objetivo, então chegou no ótimo.
+                        if(this.twoPhasesActive && this.body[0][0].n == 0 && this.baseSet.has(this.countTerms - 1)){ // se chegou no ótimo enquanto o método de duas fases está ativo (e o ótimo é igual a zero), mas a variável artificial 'A' está na base
+                            let variableIn = 1;
+                            for(; variableIn < this.countTerms - 1 && (this.base[0] == variableIn); variableIn++);
+                            if(variableIn == this.countTerms - 1)
+                                insertUnfeasibleProblemAlert();
+                            else{
+                                this.states.push({type: 4, variableIn: variableIn, variableOut: this.countTerms - 1});
+                                this.pivoting(this.states[this.states.length - 1].variableIn, this.states[this.states.length - 1].variableOut);
+                                this.showCurrentState();
+                                this.updateDatas();
+                            }
+                            return;
+                        }
                         if(this.twoPhasesActive){
                             if(this.body[0][0].n != 0){
-                                console.log('Problema inviável');
+                                insertUnfeasibleProblemAlert();
                                 return;
                             }
                             const aCoefficient = new Array();
@@ -567,29 +510,26 @@ export class Model{
                             if(!this.executeSimplexActive)
                                 this.finishedExecution = 1;
                             else
-                                this.showState();
+                                this.showCurrentState();
+                            insertViablePointFoundAlert(this.generateCurrentPointHTML());
                         }
                         else{
+                            insertGreatFoundAlert(this.generateCurrentPointHTML(), this.body[0][0]);
                             this.executeSimplexActive = false;
                             this.finishedExecution = 1;
-                        }
-                        if(this.dimensions == 2){
-                            this.datas[this.datas.length - 2].x.pop();
-                            this.datas[this.datas.length - 2].y.pop();
                         }
                         this.updateDatas();
                     }
                     else{
                         this.states.push({type: 1, variableIn: variableIn});
-                        this.showStateLimits(variableIn);
+                        this.showCurrentStateLimits(variableIn);
                     }
                 }
                 else{
                     let variableOut = 0;
-                    for(; !this.limits[variableOut].type && variableOut < this.limits.length; variableOut++);
-                    if(variableOut >= this.limits.length){
-                        console.log('Problema ilimiado');
-                    }
+                    for(; variableOut < this.limits.length && !this.limits[variableOut].type; variableOut++);
+                    if(variableOut >= this.limits.length)
+                        insertUnlimitedProblemAlert(this.variables[this.states[this.states.length - 1].variableIn - 1]);
                     else{
                         for(let i = variableOut + 1; i < this.limits.length; i++)
                             if(this.limits[i].type && this.limits[i].value < this.limits[variableOut].value)
@@ -597,15 +537,9 @@ export class Model{
                         variableOut = this.base[this.limits[variableOut].index];
                         this.states.push({type: 2, variableOut: variableOut});
                         this.pivoting(this.states[this.states.length - 2].variableIn, variableOut);
-                        this.showState();
+                        this.showCurrentState();
                         this.updateDatas();
                     }
-                    /* if(this.type){
-                        const variableIn = this.getBiggerVariable();
-                    }
-                    else{
-                        const variableIn = this.getSmallerVariable();
-                    } */
                 }
             }
         }
@@ -628,40 +562,25 @@ export class Model{
                 }
                 this.executeSimplexActive = false;
                 this.finishedExecution = 1;
-                if(this.dimensions == 2){
-                    this.datas[this.datas.length - 2].x.pop();
-                    this.datas[this.datas.length - 2].y.pop();
-                }
                 this.updateDatas();
                 break;
             default:{
                 switch(this.states[this.states.length - 1].type){
                     case 0:
                         this.pivoting(this.states[this.states.length - 1].variableOut, this.states[this.states.length - 1].variableIn);
-                        this.showState();
-                        if(this.dimensions == 2){
-                            this.datas[this.datas.length - 2].x.pop();
-                            this.datas[this.datas.length - 2].y.pop();
-                        }
+                        this.showCurrentState();
                         this.updateDatas();
                         this.states.pop();
                         break;
                     case 1:
-                        this.showStateLimits(this.states[this.states.length - 1].variableIn);
-                        while(true){
-                            const limit = document.querySelector('.limit');
-                            if(limit == null)
-                                break;
-                            limit.remove();
-                        }
+                        this.showCurrentStateLimits(this.states[this.states.length - 1].variableIn);
+                        this.removeAllLimitsFromDictionary();
                         this.states.pop();
                         break;
                     case 2:
                         this.pivoting(this.states[this.states.length - 1].variableOut, this.states[this.states.length - 2].variableIn);
-                        console.log('variableIn: ', this.variables[this.states[this.states.length - 2].variableIn - 1]);
-                        console.log('variableOut: ', this.variables[this.states[this.states.length - 1].variableOut - 1]);
-                        this.showState();
-                        this.showStateLimits(this.states[this.states.length - 2].variableIn);
+                        this.showCurrentState();
+                        this.showCurrentStateLimits(this.states[this.states.length - 2].variableIn);
                         this.updateDatas();
                         this.states.pop();
                         break;
@@ -671,16 +590,17 @@ export class Model{
                             this.body[0][i] = zero;
                         for(let i = 0; i < this.countExpressions; i++)
                             this.body[i].push(this.states[this.states.length - 1].aCoefficient[i]);
-                        console.log(this.states[this.states.length - 1].aCoefficient);
                         this.variables.push('A');
                         this.countTerms++;
                         this.type = false;
                         this.twoPhasesActive = true;
-                        this.showState();
-                        if(this.dimensions == 2){
-                            this.datas[this.datas.length - 2].x.pop();
-                            this.datas[this.datas.length - 2].y.pop();
-                        }
+                        this.showCurrentState();
+                        this.updateDatas();
+                        this.states.pop();
+                        break;
+                    case 4:
+                        this.pivoting(this.states[this.states.length - 1].variableOut, this.states[this.states.length - 1].variableIn);
+                        this.showCurrentState();
                         this.updateDatas();
                         this.states.pop();
                 }
@@ -689,13 +609,18 @@ export class Model{
     }
 
 
-    showLimits(variableIndex){
+    removeAllLimitsFromDictionary(){
         while(true){
             const limit = document.querySelector('.limit');
             if(limit == null)
                 break;
             limit.remove();
         }
+    }
+
+
+    showLimits(variableIndex){
+        this.removeAllLimitsFromDictionary();
         const variable = this.variables[variableIndex - 1];
         for(let i = 1; i < this.countExpressions; i++){
             if(this.base[i] != null){
@@ -720,18 +645,8 @@ export class Model{
                             element.appendChild(document.createTextNode('-'));
                         if(limit.d == 1)
                             element.appendChild(document.createTextNode(limit.n.toString()));
-                        else{
-                            const math = document.createElementNS('http://www.w3.org/1998/Math/MathML', 'math');
-                            const mfrac = document.createElementNS('http://www.w3.org/1998/Math/MathML', 'mfrac');
-                            const min = document.createElementNS('http://www.w3.org/1998/Math/MathML', 'mi');
-                            min.appendChild(document.createTextNode(limit.n.toString()));
-                            const mid = document.createElementNS('http://www.w3.org/1998/Math/MathML', 'mi');                        
-                            mid.appendChild(document.createTextNode(limit.d.toString()));
-                            mfrac.appendChild(min);
-                            mfrac.appendChild(mid);
-                            math.appendChild(mfrac);
-                            element.appendChild(math);
-                        }
+                        else
+                            this.addFractionToDictionary(element, limit);
                     }
                     else
                         element.appendChild(document.createTextNode(' É ILIMITADO'));
@@ -836,6 +751,35 @@ export class Model{
         }
     }
 
+
+    generateCurrentPointText(){
+        let text = '';
+        for(let i = 1; i < this.countTerms; i++){
+            if(this.baseSet.has(i)){
+                const index = this.base.indexOf(i)
+                text += '(' + this.variables[i - 1] + ': ' + (this.body[index][0].s*this.body[index][0].n/this.body[index][0].d).toString() + '), \n';
+            }
+            else
+                text += '(' + this.variables[i - 1] + ': 0), ';
+        }
+        return text.substring(0, text.length - 3);
+    }
+
+
+    generateCurrentPointHTML(){
+        let text = '';
+        for(let i = 1; i < this.countTerms; i++){
+            if(this.baseSet.has(i)){
+                const index = this.base.indexOf(i)
+                text += '(' + (this.variables[i - 1].length > 1 ? this.variables[i - 1].charAt(0) + '<sub style=\'font-size: 60%;\'\>' + this.variables[i - 1].substring(1) + '</sub\>' : this.variables[i - 1]) + ': ' + (this.body[index][0].s*this.body[index][0].n/this.body[index][0].d).toString() + '), \n';
+            }
+            else
+                text += '(' + (this.variables[i - 1].length > 1 ? this.variables[i - 1].charAt(0) + '<sub style=\'font-size: 60%;\'\>' + this.variables[i - 1].substring(1) + '</sub\>' : this.variables[i - 1]) + ': 0), ';
+        }
+        return text.substring(0, text.length - 3);
+    }
+
+
     generateGraph(){
         if(this.dimensions == 2){
             this.datas.push({x: [-infinity, infinity], y:[0, 0], name: this.variables[this.variablesGraph[0] - 1] + '=0', mode: 'lines'});
@@ -851,19 +795,10 @@ export class Model{
             this.config = {scrollZoom: true, editable: false, modeBarButtonsToRemove: ['autoScale2d', 'lasso2d', 'resetScale2d', 'select2d', 'toImage', 'zoom2d']};
             let xValue = math.fraction('0');
             let yValue = math.fraction('0');
-            let text = '';
             if(this.baseSet.has(this.variablesGraph[0]))
                 xValue = this.body[this.base.indexOf(this.variablesGraph[0])][0];
             if(this.baseSet.has(this.variablesGraph[1]))
                 yValue = this.body[this.base.indexOf(this.variablesGraph[1])][0];
-            for(let i = 1; i < this.countTerms; i++){
-                if(this.baseSet.has(i)){
-                    const index = this.base.indexOf(i)
-                    text += '(' + this.variables[i - 1] + ': ' + (this.body[index][0].s*this.body[index][0].n/this.body[index][0].d).toString() + '), \n';
-                }
-                else
-                    text += '(' + this.variables[i - 1] + ': 0), \n';
-            }
             const x = xValue.s*xValue.n/xValue.d
             const y = yValue.s*yValue.n/yValue.d
             this.datas.push({
@@ -877,7 +812,7 @@ export class Model{
             this.datas.push({
                 x: [x],
                 y: [y],
-                text: [text],
+                text: [this.generateCurrentPointText()],
                 mode: 'markers',
                 marker: {size: 12},
                 type: 'scatter',
@@ -912,8 +847,10 @@ export class Model{
             }            
             const x = xValue.s*xValue.n/xValue.d
             const y = yValue.s*yValue.n/yValue.d
-            this.datas[this.datas.length - 2].x.push(x);
-            this.datas[this.datas.length - 2].y.push(y);
+            if(this.datas[this.datas.length - 2].x[this.datas[this.datas.length - 2].x.length - 1] != x || this.datas[this.datas.length - 2].y[this.datas[this.datas.length - 2].y.length - 1] != y){
+                this.datas[this.datas.length - 2].x.push(x);
+                this.datas[this.datas.length - 2].y.push(y);
+            }
             this.datas[this.datas.length - 1].x.push(x);
             this.datas[this.datas.length - 1].y.push(y);
             this.datas[this.datas.length - 1].text.push(text);
@@ -923,15 +860,16 @@ export class Model{
 
 
     resizeGraph(){
-        if(this.dimensions == 2 && window.innerWidth > 900){
-            this.layout.height = 0.3375*window.innerWidth;
-            this.layout.width = 0.9*window.innerWidth;
-            Plotly.redraw('graph');
-        }
-        else{
-            this.layout.height = 303.75;
-            this.layout.width = 810;
-            Plotly.redraw('graph');
-        }
+        if(this.dimensions == 2)
+            if(window.innerWidth > 900){
+                this.layout.height = 0.3375*window.innerWidth;
+                this.layout.width = 0.9*window.innerWidth;
+                Plotly.redraw('graph');
+            }
+            else{
+                this.layout.height = 303.75;
+                this.layout.width = 810;
+                Plotly.redraw('graph');
+            }
     }
 }

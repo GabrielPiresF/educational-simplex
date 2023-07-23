@@ -1,5 +1,5 @@
-// mousewheel or two-finger scroll zooms the plot
-
+import {insertSyntaxErrorAlert,
+    insertCurrentIsViablePointAlert} from './alert.js'
 import {parse} from './lp.js';
 import {Model} from './model.js';
 
@@ -59,7 +59,7 @@ fileExecute.addEventListener('click', function(){
         lpResult = parse(filePreview.value);
     }
     catch(error){
-        alert(error.toString().replace('SyntaxError: Expected', 'Há um erro sintático no modelo\nEra esperado').replace(', or', ' ou').replace(' but', ', mas').replace('found', 'foi encontrado'));
+        insertSyntaxErrorAlert(error)
     }
     if(lpResult != null){
         model = new Model(lpResult);
@@ -108,18 +108,20 @@ const updateBottons = function(){
         if(!model.isTheCurrentPointValid()){
             model.insertA();
             model.beginStates();
-            model.showState();
+            model.showCurrentState();
             putStateButtons();
         }
+        else
+            insertCurrentIsViablePointAlert();
     });
     const executeSimplex = document.getElementById('executeSimplex');
     executeSimplex.addEventListener('click', function(){
-    if(!model.isTheCurrentPointValid())
-        model.insertA();
-    model.enableSimplexExecution();
-    model.beginStates();
-    model.showState();
-    putStateButtons();
+        if(!model.isTheCurrentPointValid())
+            model.insertA();
+        model.enableSimplexExecution();
+        model.beginStates();
+        model.showCurrentState();
+        putStateButtons();
     });
 }
 

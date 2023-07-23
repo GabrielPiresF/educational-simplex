@@ -2,15 +2,20 @@
 <html>
 <head>
     <title>Simplex Didático</title>
-    <link rel="shortcut icon" href="images/favicon.png">
+    <link rel='shortcut icon' href='images/favicon.png'>
     <meta charset='UTF-8'>
     <meta name='viewport' content='width=device-width, initial-scale=1.0'>    
     <script src='https://cdn.plot.ly/plotly-2.24.1.min.js'></script>
+    <script src='https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js'></script>
     <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.2/math.js' integrity='sha512-ap888g/h47w/Rp6mra1vA5NJtdPZJRxOuF/x7jkrL2NdRB8XrKwXIt/PMvre+oMPUdYt+6NNDjwbdwl/PkYXrw==' crossorigin='anonymous' referrerpolicy='no-referrer'></script>
+    <link href='https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css' rel='stylesheet'>
+    <link href='https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css' rel='stylesheet'>
     <link href='style.css' rel='stylesheet'>
 </head>
 
 <body>
+    <div id='alerts-container'></div>
+    
     <div style='width: 100%;'>
         <label for='file' class='button'>SELECIONAR MODELO</label>
         <input type='file' id='file' style='display: none;'/>
@@ -18,7 +23,7 @@
 
     <div id = 'main'>
         <div id='file'>
-            <textarea rows='10' cols='auto' id='preview'></textarea>
+            <textarea rows='10' cols='auto' id='preview' spellcheck='false'></textarea>
             <button id='download' class='button'>BAIXAR MODELO</button>
             <button id='execute' class='button'>EXECUTAR MODELO</button>
         </div>
@@ -27,9 +32,10 @@
 
     <div id='graph-container'>
         <div id='graph'></div>
-    </div>
-    <script type='module' src='main.js'></script>    
+    </div>    
+    <script type='module' src='alert.js'></script>
     <script type='module' src='lp.js'></script>
+    <script type='module' src='main.js'></script>
     <script type='module' src='model.js'></script>
 </body>
 </html>
